@@ -119,6 +119,11 @@ variable "codebuild_credential_arn" {
   default = ""
 }
 
+variable "codebuild_can_invoke_lambda" {
+  type    = bool
+  default = false
+}
+
 variable "build_timeout" {
   type    = string
   default = "60"

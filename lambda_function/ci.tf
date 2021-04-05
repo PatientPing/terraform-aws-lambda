@@ -49,6 +49,7 @@ resource "aws_iam_role_policy" "codebuild" {
         "lambda:UpdateFunctionCode",
         "lambda:ListVersionsByFunction",
         "lambda:UpdateAlias"
+        "${var.codebuild_can_invoke_lambda ? ",lambda:InvokeFunction" : ""}"
       ]
     }
   ]
