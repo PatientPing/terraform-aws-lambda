@@ -24,37 +24,38 @@ EOF
 
 resource "aws_iam_role_policy" "codebuild" {
   count = var.github_url == "" ? 0 : 1
-
   role = aws_iam_role.codebuild[0].name
-
-  policy = <<EOF
-{
-  "Version": "2012-10-17",
-  "Statement": [
-    {
-      "Effect": "Allow",
-      "Resource": [
-        "*"
-      ],
-      "Action": [
-        "logs:CreateLogGroup",
-        "logs:CreateLogStream",
-        "logs:PutLogEvents"
-      ]
-    },
-    {
-      "Effect": "Allow",
-      "Resource": "${aws_lambda_function.lambda.arn}",
-      "Action": [
-        "lambda:UpdateFunctionCode",
-        "lambda:ListVersionsByFunction",
-        "lambda:UpdateAlias"
-        "${var.codebuild_can_invoke_lambda ? ",lambda:InvokeFunction" : ""}"
-      ]
-    }
-  ]
+  policy = data.aws_iam_policy_document.policy.json
 }
-EOF
+
+data "aws_iam_policy_document" "policy" {
+  statement {
+    effect = "Allow"
+    resources = ["*"]
+    actions = [
+      "logs:CreateLogGroup",
+      "logs:CreateLogStream",
+      "logs:PutLogEvents"]
+  }
+  statement {
+    effect = "Allow"
+    resources = [
+      aws_lambda_function.lambda.arn]
+    actions = [
+      "lambda:UpdateFunctionCode",
+      "lambda:ListVersionsByFunction",
+      "lambda:UpdateAlias"
+    ]
+  }
+  dynamic "statement" {
+    for_each = var.codebuild_can_invoke_lambda ? ["allow_invoke"] : []
+    content {
+      effect = "Allow"
+      resources = [aws_lambda_function.lambda.arn]
+      actions = ["lambda:InvokeFunction"]
+    }
+  }
+
 }
 
 resource "aws_codebuild_project" "lambda" {
