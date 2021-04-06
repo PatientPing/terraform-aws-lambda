@@ -52,7 +52,7 @@ data "aws_iam_policy_document" "policy" {
     content {
       effect = "Allow"
       resources = [aws_lambda_function.lambda.arn]
-      actions = ["lambda:InvokeFunction"]
+      actions = ["lambda:InvokeFunction", "lambda:GetFunctionConfiguration"]
     }
   }
 
