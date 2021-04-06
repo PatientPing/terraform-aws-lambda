@@ -74,7 +74,10 @@ resource "aws_codebuild_project" "lambda" {
     image                       = "aws/codebuild/standard:4.0"
     type                        = "LINUX_CONTAINER"
     image_pull_credentials_type = "CODEBUILD"
-    run_integration_test        = var.codebuild_can_run_integration_test
+    environment_variable {
+      name = "run_integration_test"
+      value = var.codebuild_can_run_integration_test
+    }
   }
 
   source {
