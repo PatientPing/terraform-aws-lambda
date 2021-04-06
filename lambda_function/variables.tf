@@ -119,7 +119,7 @@ variable "codebuild_credential_arn" {
   default = ""
 }
 
-variable "codebuild_can_invoke_lambda" {
+variable "codebuild_can_run_integration_test" {
   type    = bool
   default = false
 }

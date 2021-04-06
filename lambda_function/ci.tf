@@ -48,7 +48,7 @@ data "aws_iam_policy_document" "policy" {
     ]
   }
   dynamic "statement" {
-    for_each = var.codebuild_can_invoke_lambda ? ["allow_invoke"] : []
+    for_each = var.codebuild_can_run_integration_test ? ["allow_invoke"] : []
     content {
       effect = "Allow"
       resources = [aws_lambda_function.lambda.arn]
@@ -74,6 +74,7 @@ resource "aws_codebuild_project" "lambda" {
     image                       = "aws/codebuild/standard:4.0"
     type                        = "LINUX_CONTAINER"
     image_pull_credentials_type = "CODEBUILD"
+    run_integration_test        = var.codebuild_can_run_integration_test
   }
 
   source {
