@@ -131,4 +131,4 @@ If invoking this module within an environment where Integration testing makes se
  * The codebuild job that accompanies lambda ci is now able to invoke the lambda function
  * The codebuild job will know if it's appropriate to perform integration testing in the environment it's running in according to env variable "run_integration_test"
 
-As an example implementation of the codebuild job conditionally running integration tests see https://github.com/PatientPing/d2p_address_lookup_lambda
+For an example implementation of a lambda-codebuild job setup to conditionally run integration tests see https://github.com/PatientPing/d2p_address_lookup_lambda
