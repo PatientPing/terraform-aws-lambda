@@ -63,6 +63,7 @@ Additional arguments:
 | create_empty_layer        | Create an empty lambda layer without the actual code if set to true       | True         |
 | codebuild_image           | Specify Codebuild's [image](https://docs.aws.amazon.com/codebuild/latest/userguide/build-env-ref-available.html) | "aws/codebuild/standard:1.0" |
 | privileged_mode           | Run the docker container with [privilege](https://docs.docker.com/engine/reference/run/#runtime-privilege-and-linux-capabilities)               | False         |
+| codebuild_can_run_integration_test | Specifies whether or not codebuild job can invoke lambda function and is passed through to the job as an env variable (run_integration_test) | False
 
 # CodeBuild
 
