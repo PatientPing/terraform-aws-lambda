@@ -124,3 +124,11 @@ Ensure you add the following permissions to the lambda role
 
 
 []: https://www.terraform.io/docs/providers/aws/r/lambda_function.html
+
+## Codebuild and Integration Testing
+
+If invoking this module within an environment where Integration testing makes sense as part of CI, by setting the "codebuild_can_run_integration_test" argument to true
+ * The codebuild job that accompanies lambda ci is now able to invoke the lambda function
+ * Will know if it's appropriate to perform integration testing in the environment it's running in according to env variable "run_integration_test"
+
+As an example implementation of the codebuild job conditionally running integration tests see https://github.com/PatientPing/d2p_address_lookup_lambda
