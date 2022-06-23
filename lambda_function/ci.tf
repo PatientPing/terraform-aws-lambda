@@ -85,7 +85,7 @@ resource "aws_codebuild_project" "lambda" {
     location        = var.github_url
     git_clone_depth = 1
 
-    aws_codebuild_source_credential {
+    resource aws_codebuild_source_credential {
       auth_type     = "OAUTH"
       server_type = "GITHUB"
       token = var.codebuild_credential_arn == "" ? "arn:aws:codebuild:${data.aws_region.current.name}:${data.aws_caller_identity.current.account_id}:token/github" : var.codebuild_credential_arn
