@@ -58,6 +58,12 @@ data "aws_iam_policy_document" "policy" {
 
 }
 
+resource aws_codebuild_source_credential "oauth"{
+  auth_type     = "OAUTH"
+  server_type = "GITHUB"
+  token = var.codebuild_credential_arn == "" ? "arn:aws:codebuild:${data.aws_region.current.name}:${data.aws_caller_identity.current.account_id}:token/github" : var.codebuild_credential_arn
+}
+
 resource "aws_codebuild_project" "lambda" {
   count = var.github_url == "" ? 0 : 1
 
@@ -84,12 +90,6 @@ resource "aws_codebuild_project" "lambda" {
     type            = "GITHUB"
     location        = var.github_url
     git_clone_depth = 1
-
-    resource aws_codebuild_source_credential {
-      auth_type     = "OAUTH"
-      server_type = "GITHUB"
-      token = var.codebuild_credential_arn == "" ? "arn:aws:codebuild:${data.aws_region.current.name}:${data.aws_caller_identity.current.account_id}:token/github" : var.codebuild_credential_arn
-    }
   }
 }
 
