@@ -56,6 +56,9 @@ variable "trigger_schedule" {
 
   default = {
     enabled = 0
+    input_parameters_json = <<JSON
+      {}
+    JSON
   }
 }
 
