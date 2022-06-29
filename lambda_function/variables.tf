@@ -60,8 +60,7 @@ variable "trigger_schedule" {
 }
 
 variable "trigger_input_parameters_json" {
-  type = map(any)
-  default = <<JSON
+  input_parameters_json = <<JSON
       {}
     JSON
 }
