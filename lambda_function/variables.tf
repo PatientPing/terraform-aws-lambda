@@ -60,7 +60,7 @@ variable "trigger_schedule" {
 }
 
 variable "trigger_input_parameters_json" {
-  input_parameters_json = <<JSON
+  default = <<JSON
       {}
     JSON
 }
