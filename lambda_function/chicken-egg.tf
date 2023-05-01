@@ -11,6 +11,7 @@ locals {
     "python2.7"  = "${path.module}/placeholders/python2.7"
     "python3.7"  = "${path.module}/placeholders/python3.7/"
     "python3.6"  = "${path.module}/placeholders/python3.6/"
+    "python3.10" = "${path.module}/placeholders/python3.10/"
     "nodejs6.10" = "${path.module}/placeholders/nodejs6.10/"
     "nodejs8.10" = "${path.module}/placeholders/nodejs8.10/"
     java8        = "${path.module}/placeholders/java8"
