@@ -31,3 +31,6 @@ resource "aws_lambda_function" "lambda" {
     ]
   }
 }
+output "module_path" {
+  value = "${path.module}"
+}
