@@ -29,7 +29,7 @@ resource "aws_iam_role_policy" "unit_test_codebuild" {
       {
         Effect   = "Allow"
         Resource = [
-          "arn:aws:codebuild:${data.aws_region.current.name}:${data.aws_caller_identity.current.account_id}:report-group/${aws_codebuild_project.kno2_api_layer_unit_test_codebuild.name}-*"
+          "arn:aws:codebuild:${data.aws_region.current.name}:${data.aws_caller_identity.current.account_id}:report-group/${aws_codebuild_project.unit_test_codebuild.name}-*"
         ]
         Action = [
           "codebuild:CreateReportGroup",
