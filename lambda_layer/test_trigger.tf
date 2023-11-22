@@ -73,25 +73,20 @@ resource "aws_codebuild_project" "unit_test_codebuild" {
     type = "NO_ARTIFACTS"
   }
 
+  environment {
+    compute_type                = "BUILD_GENERAL1_SMALL"
+    image                       = var.codebuild_image
+    type                        = "LINUX_CONTAINER"
+    image_pull_credentials_type = "CODEBUILD"
+    privileged_mode             = var.privileged_mode
+  }
+
   source {
     type            = "GITHUB"
     location        = var.github_url
     git_clone_depth = 2
     buildspec       = "buildspec-tests.yml"
-
-    auth {
-      type     = "OAUTH"
-      resource = "arn:aws:codebuild:${data.aws_region.current.name}:${data.aws_caller_identity.current.account_id}:token/github"
-    }
   }
-
-  environment {
-    compute_type    = "BUILD_GENERAL1_MEDIUM"
-    image           = "aws/codebuild/amazonlinux2-x86_64-standard:3.0"
-    type            = "LINUX_CONTAINER"
-    privileged_mode = true
-  }
-
 }
 
 resource "aws_codebuild_webhook" "unit_test_codebuild" {

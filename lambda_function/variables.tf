@@ -115,6 +115,16 @@ variable "github_url" {
   default = ""
 }
 
+variable "codebuild_image" {
+  type    = string
+  default = "aws/codebuild/standard:4.0"
+}
+
+variable "privileged_mode" {
+  type    = string
+  default = false
+}
+
 variable "layers" {
   type    = list(string)
   default = []
