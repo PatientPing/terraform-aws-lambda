@@ -136,11 +136,17 @@ variable "build_timeout" {
 }
 
 variable "git_branch" {
-  type = string
+  type    = string
   default = "master"
 }
 
 variable "ephemeral_storage" {
-  type = number
+  type    = number
   default = 512
+}
+
+variable "create_unit_test_resources" {
+  type        = bool
+  default     = false
+  description = "If true, will create all the resources for running unit tests"
 }
