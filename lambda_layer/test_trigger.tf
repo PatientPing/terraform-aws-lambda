@@ -21,7 +21,7 @@ EOF
 resource "aws_iam_role_policy" "unit_test_codebuild" {
   count = var.create_unit_test_resources == true ? 1 : 0
   name  = "${var.layer_name}_ci_test"
-  role  = aws_iam_role.unit_test_codebuild_role.name
+  role  = aws_iam_role.unit_test_codebuild_role[0].name
 
   policy = jsonencode({
     Version : "2012-10-17",
@@ -29,7 +29,7 @@ resource "aws_iam_role_policy" "unit_test_codebuild" {
       {
         Effect   = "Allow"
         Resource = [
-          "arn:aws:codebuild:${data.aws_region.current.name}:${data.aws_caller_identity.current.account_id}:report-group/${aws_codebuild_project.unit_test_codebuild.name}-*"
+          "arn:aws:codebuild:${data.aws_region.current.name}:${data.aws_caller_identity.current.account_id}:report-group/${aws_codebuild_project.unit_test_codebuild[0].name}-*"
         ]
         Action = [
           "codebuild:CreateReportGroup",
@@ -58,7 +58,7 @@ resource "aws_iam_role_policy" "unit_test_codebuild" {
 resource "aws_codebuild_project" "unit_test_codebuild" {
   count        = var.create_unit_test_resources == true ? 1 : 0
   name         = "${var.layer_name}_ci_test"
-  service_role = aws_iam_role.unit_test_codebuild_role.arn
+  service_role = aws_iam_role.unit_test_codebuild_role[0].arn
 
   artifacts {
     type = "NO_ARTIFACTS"
@@ -82,7 +82,7 @@ resource "aws_codebuild_project" "unit_test_codebuild" {
 
 resource "aws_codebuild_webhook" "unit_test_codebuild" {
   count        = var.create_unit_test_resources == true ? 1 : 0
-  project_name = aws_codebuild_project.unit_test_codebuild.name
+  project_name = aws_codebuild_project.unit_test_codebuild[0].name
 
   filter_group {
     filter {
