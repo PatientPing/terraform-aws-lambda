@@ -115,6 +115,16 @@ variable "github_url" {
   default = ""
 }
 
+variable "codebuild_image" {
+  type    = string
+  default = "aws/codebuild/standard:4.0"
+}
+
+variable "privileged_mode" {
+  type    = string
+  default = false
+}
+
 variable "layers" {
   type    = list(string)
   default = []
@@ -136,11 +146,17 @@ variable "build_timeout" {
 }
 
 variable "git_branch" {
-  type = string
+  type    = string
   default = "master"
 }
 
 variable "ephemeral_storage" {
-  type = number
+  type    = number
   default = 512
+}
+
+variable "create_codebuild_to_run_unit_test" {
+  type        = bool
+  default     = false
+  description = "If true, will create codebuild and all the resources for running unit tests"
 }
