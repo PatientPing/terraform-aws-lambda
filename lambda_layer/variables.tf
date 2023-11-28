@@ -58,8 +58,8 @@ variable "git_branch" {
   default = "master"
 }
 
-variable "create_unit_test_resources" {
+variable "create_codebuild_to_run_unit_test" {
   type        = bool
   default     = false
-  description = "If true, will create all the resources for running unit tests"
+  description = "If true, will create codebuild and all the resources for running unit tests"
 }

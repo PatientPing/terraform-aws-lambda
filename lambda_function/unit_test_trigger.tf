@@ -1,5 +1,5 @@
 resource "aws_iam_role" "unit_test_codebuild_role" {
-  count = var.create_unit_test_resources == true ? 1 : 0
+  count = var.create_codebuild_to_run_unit_test == true ? 1 : 0
   name  = "${var.function_name}_ci_test"
 
   assume_role_policy = <<EOF
@@ -19,7 +19,7 @@ EOF
 }
 
 resource "aws_iam_role_policy" "unit_test_codebuild" {
-  count = var.create_unit_test_resources == true ? 1 : 0
+  count = var.create_codebuild_to_run_unit_test == true ? 1 : 0
   name  = "${var.function_name}_ci_test"
   role  = aws_iam_role.unit_test_codebuild_role[0].name
 
@@ -56,7 +56,7 @@ resource "aws_iam_role_policy" "unit_test_codebuild" {
 
 
 resource "aws_codebuild_project" "unit_test_codebuild" {
-  count        = var.create_unit_test_resources == true ? 1 : 0
+  count        = var.create_codebuild_to_run_unit_test == true ? 1 : 0
   name         = "${var.function_name}_ci_test"
   service_role = aws_iam_role.unit_test_codebuild_role[0].arn
 
@@ -81,7 +81,7 @@ resource "aws_codebuild_project" "unit_test_codebuild" {
 }
 
 resource "aws_codebuild_webhook" "unit_test_codebuild" {
-  count        = var.create_unit_test_resources == true ? 1 : 0
+  count        = var.create_codebuild_to_run_unit_test == true ? 1 : 0
   project_name = aws_codebuild_project.unit_test_codebuild[0].name
 
   filter_group {
