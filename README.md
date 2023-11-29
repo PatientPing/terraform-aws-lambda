@@ -140,11 +140,11 @@ For an example implementation of a lambda-codebuild job setup to conditionally r
 
 ## Codebuild and Unit Testing
 
-If invoking this module within an environment where unit testing makes sense, by setting the "codebuild_can_run_unit_test" argument to true
+If invoking this module within an environment where unit testing makes sense, by setting the `create_codebuild_to_run_unit_test` argument to true
 * A new codebuild job, its associated webhooks, and the necessary resources will be created to run unit tests
 * This new codebuild can be created for both lambda functions and layers
 * This codebuild job gets triggered automatically by certain events in lambda functions and layers github repo, such as a pull request or pull request update
-* The details on this codebuild job can be found in the "unit_test_trigger.tf" file in the lambda_function and lambda_layer directories
+* The details on this codebuild job can be found in the `unit_test_trigger.tf` file in the lambda_function and lambda_layer directories
 * Following things need to be done for proper setup:
   * Need to make sure that codebuild_can_run_unit_test is set to true in the lambda_function or lambda_layer module
   * To trigger this codebuild, you need to add buildspec-tests.yml in the branch you are creating the PR from
