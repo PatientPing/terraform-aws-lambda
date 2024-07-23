@@ -7,13 +7,13 @@ variable "vpc_config" {
   type = map(list(string))
 
   default = {
-    subnet_ids         = []
+    subnet_ids = []
     security_group_ids = []
   }
 }
 
 variable "tags" {
-  type    = map(string)
+  type = map(string)
   default = {}
 }
 
@@ -47,7 +47,7 @@ variable "environment_variables" {
 }
 
 variable "source_mappings" {
-  type    = list(any)
+  type = list(any)
   default = []
 }
 
@@ -74,7 +74,7 @@ variable "sns_topic_subscription" {
 }
 
 variable "policies" {
-  type    = list(any)
+  type = list(any)
   default = []
 }
 
@@ -126,7 +126,7 @@ variable "privileged_mode" {
 }
 
 variable "layers" {
-  type    = list(string)
+  type = list(string)
   default = []
 }
 
@@ -159,4 +159,33 @@ variable "create_codebuild_to_run_unit_test" {
   type        = bool
   default     = false
   description = "If true, will create codebuild and all the resources for running unit tests"
+}
+
+variable "log_group_name" {
+  type        = string
+  default     = null
+  description = "If set, will create a log group with that name for the lambda, otherwise the default name (/aws/lambda/<function name>) will be used"
+}
+
+variable "log_retention_in_days" {
+  type    = number
+  default = 0 # Never expire
+}
+
+variable "log_skip_destroy" {
+  type        = bool
+  default     = true
+  description = "If true, the log group will not be destroyed when the lambda is destroyed"
+}
+
+variable "ship_logs_to_sumo" {
+  type        = bool
+  default     = false
+  description = "If true, will create a subscription filter to send logs to Sumo Logic"
+}
+
+variable "log_tags" {
+  type = map(string)
+  default     = var.tags
+  description = "Tags to apply to the log group. Defaults to the same tags as the lambda function."
 }
