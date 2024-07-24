@@ -7,13 +7,13 @@ variable "vpc_config" {
   type = map(list(string))
 
   default = {
-    subnet_ids = []
+    subnet_ids         = []
     security_group_ids = []
   }
 }
 
 variable "tags" {
-  type = map(string)
+  type    = map(string)
   default = {}
 }
 
@@ -47,7 +47,7 @@ variable "environment_variables" {
 }
 
 variable "source_mappings" {
-  type = list(any)
+  type    = list(any)
   default = []
 }
 
@@ -74,7 +74,7 @@ variable "sns_topic_subscription" {
 }
 
 variable "policies" {
-  type = list(any)
+  type    = list(any)
   default = []
 }
 
@@ -126,7 +126,7 @@ variable "privileged_mode" {
 }
 
 variable "layers" {
-  type = list(string)
+  type    = list(string)
   default = []
 }
 
@@ -185,7 +185,7 @@ variable "ship_logs_to_sumo" {
 }
 
 variable "log_tags" {
-  type = map(string)
+  type        = map(string)
   default     = var.tags
   description = "Tags to apply to the log group. Defaults to the same tags as the lambda function."
 }
