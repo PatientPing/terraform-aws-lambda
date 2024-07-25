@@ -5,7 +5,7 @@ locals {
 resource "aws_cloudwatch_log_group" "lambda_log_group" {
   name              = local.log_group_name
   retention_in_days = var.log_retention_in_days
-  tags              = var.log_tags
+  tags              = var.log_tags == {} ? var.tags : var.log_tags
   skip_destroy      = var.log_skip_destroy
 }
 

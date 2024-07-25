@@ -187,5 +187,5 @@ variable "ship_logs_to_sumo" {
 variable "log_tags" {
   type        = map(string)
   default     = {}
-  description = "Tags to apply to the log group. Defaults to the same tags as the lambda function."
+  description = "Tags to apply to the log group. Defaults to the same tags as the lambda function if nothing is passed in."
 }
