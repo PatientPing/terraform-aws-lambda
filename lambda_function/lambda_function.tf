@@ -1,3 +1,22 @@
+locals {
+  log_group_name = var.log_group_name == null ? "/aws/lambda/${var.function_name}" : var.log_group_name
+}
+
+resource "aws_cloudwatch_log_group" "lambda_log_group" {
+  name              = local.log_group_name
+  retention_in_days = var.log_retention_in_days
+  tags              = var.log_tags == {} ? var.tags : var.log_tags
+  skip_destroy      = var.log_skip_destroy
+}
+
+resource "aws_cloudwatch_log_subscription_filter" "example_subscription_filter" {
+  count           = var.ship_logs_to_sumo ? 1 : 0
+  name            = "${var.function_name}_subscription_filter"
+  log_group_name  = aws_cloudwatch_log_group.lambda_log_group.name
+  destination_arn = "arn:aws:lambda:${data.aws_region.current.name}:${data.aws_caller_identity.current.account_id}:function:SumoCWLogsLambda"
+  filter_pattern  = ""
+}
+
 resource "aws_lambda_function" "lambda" {
   function_name                  = var.function_name
   description                    = var.description
