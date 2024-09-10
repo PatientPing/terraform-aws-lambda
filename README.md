@@ -148,3 +148,4 @@ If invoking this module within an environment where unit testing makes sense, by
 * Following things need to be done for proper setup:
   * Need to make sure that codebuild_can_run_unit_test is set to true in the lambda_function or lambda_layer module
   * To trigger this codebuild, you need to add buildspec-tests.yml in the branch you are creating the PR from
+  * You can make use of git_base_ref_for_unit_test if you have a different base branch for unit tests

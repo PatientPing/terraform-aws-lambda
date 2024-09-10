@@ -27,7 +27,7 @@ resource "aws_iam_role_policy" "unit_test_codebuild" {
     Version : "2012-10-17",
     Statement = [
       {
-        Effect   = "Allow"
+        Effect = "Allow"
         Resource = [
           "arn:aws:codebuild:${data.aws_region.current.name}:${data.aws_caller_identity.current.account_id}:report-group/${aws_codebuild_project.unit_test_codebuild[0].name}-*"
         ]
@@ -40,7 +40,7 @@ resource "aws_iam_role_policy" "unit_test_codebuild" {
         ]
       },
       {
-        Effect   = "Allow",
+        Effect = "Allow",
         Resource = [
           "*"
         ],
@@ -97,6 +97,11 @@ resource "aws_codebuild_webhook" "unit_test_codebuild" {
     filter {
       type    = "EVENT"
       pattern = "PULL_REQUEST_CREATED, PULL_REQUEST_UPDATED, PULL_REQUEST_REOPENED"
+    }
+
+    filter {
+      type    = "BASE_REF"
+      pattern = var.git_base_ref_for_unit_test
     }
   }
 }
