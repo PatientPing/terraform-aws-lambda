@@ -63,3 +63,9 @@ variable "create_codebuild_to_run_unit_test" {
   default     = false
   description = "If true, will create codebuild and all the resources for running unit tests"
 }
+
+variable "git_base_ref_for_unit_test" {
+  type        = string
+  default     = "^refs/heads/ma$" # base branch can be main or master by default
+  description = "The base ref for the codebuild webhook to run unit tests"
+}
