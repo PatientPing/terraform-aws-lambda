@@ -9,5 +9,5 @@
 *.tfvars
 
 # IntelliJ IDEA
-.idea
+.idea/
 *.iml
