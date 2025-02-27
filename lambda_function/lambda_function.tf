@@ -51,5 +51,5 @@ resource "aws_lambda_function" "lambda" {
       filename,
     ]
   }
-  depends_on = [var.use_docker ? null_resource.push_docker_image : null]
+  depends_on = var.use_docker ? [null_resource.push_docker_image] : []
 }
