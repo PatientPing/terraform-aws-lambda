@@ -30,6 +30,7 @@ resource "aws_lambda_function" "lambda" {
   reserved_concurrent_executions = var.reserved_concurrent_executions
   publish                        = var.publish
   layers                         = var.layers
+  package_type                   = var.use_docker ? "Image" : null
 
   ephemeral_storage {
     size = var.ephemeral_storage
