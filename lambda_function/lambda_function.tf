@@ -21,8 +21,8 @@ resource "aws_lambda_function" "lambda" {
   function_name                  = var.function_name
   description                    = var.description
   role                           = aws_iam_role.lambda.arn
-  handler                        = var.handler
-  runtime                        = var.runtime
+  handler                        = var.use_docker ? null : var.handler
+  runtime                        = var.use_docker ? null : var.runtime
   filename                       = var.use_docker ? null : var.create_empty_function ? "${path.module}/placeholder.zip" : var.filename
   image_uri                      = var.use_docker ? "${aws_ecr_repository.lambda_ecr_repo[0].repository_url}:latest" : null
   timeout                        = var.timeout
