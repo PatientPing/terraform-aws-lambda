@@ -51,10 +51,5 @@ resource "aws_lambda_function" "lambda" {
       filename,
     ]
   }
-  dynamic "depends_on" {
-    for_each = var.source_mappings
-    content {
-      depends_on = [null_resource.push_docker_image]
-    }
-  }
+  depends_on = [var.use_docker ? null_resource.push_docker_image : null]
 }
