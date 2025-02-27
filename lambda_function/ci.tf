@@ -1,3 +1,11 @@
+terraform {
+  required_providers {
+    null = {
+      source  = "hashicorp/null"
+      version = "3.2.3"
+    }
+  }
+}
 data "aws_region" "current" {}
 data "aws_caller_identity" "current" {}
 
@@ -127,5 +135,23 @@ resource "aws_codebuild_webhook" "lambda" {
 
 resource aws_ecr_repository "lambda_ecr_repo" {
   count = var.use_docker ? 1 : 0
-  name = var.function_name
+  name  = var.function_name
+
 }
+
+
+resource "null_resource" "push_docker_image" {
+  count = var.use_docker ? 1 : 0
+  triggers = {
+    ecr_repo_uri = aws_ecr_repository.lambda_ecr_repo[0].repository_url
+  }
+  provisioner "local-exec" {
+    command = <<EOF
+    aws ecr get-login-password --region ${data.aws_region.current.name} | docker login --username AWS --password-stdin ${aws_ecr_repository.lambda_ecr_repo[0].repository_url}
+    docker pull public.ecr.aws/lambda/python:3.12
+    docker tag public.ecr.aws/lambda/python:3.12 ${aws_ecr_repository.lambda_ecr_repo[0].repository_url}
+    docker push ${aws_ecr_repository.lambda_ecr_repo[0].repository_url}
+EOF
+  }
+}
+

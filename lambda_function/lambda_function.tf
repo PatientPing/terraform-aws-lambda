@@ -24,7 +24,7 @@ resource "aws_lambda_function" "lambda" {
   handler                        = var.handler
   runtime                        = var.runtime
   filename                       = var.use_docker ? null : var.create_empty_function ? "${path.module}/placeholder.zip" : var.filename
-  image_uri                      = var.use_docker ? "public.ecr.aws/lambda/python:3.12" : null
+  image_uri                      = var.use_docker ? aws_ecr_repository.lambda_ecr_repo[0].repository_url : null
   timeout                        = var.timeout
   memory_size                    = var.memory_size
   reserved_concurrent_executions = var.reserved_concurrent_executions
@@ -50,5 +50,11 @@ resource "aws_lambda_function" "lambda" {
     ignore_changes = [
       filename,
     ]
+  }
+  dynamic "depends_on" {
+    for_each = var.source_mappings
+    content {
+      depends_on = [null_resource.push_docker_image]
+    }
   }
 }
