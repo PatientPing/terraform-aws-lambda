@@ -195,3 +195,8 @@ variable "log_tags" {
   default     = {}
   description = "Tags to apply to the log group. Defaults to the same tags as the lambda function if nothing is passed in."
 }
+
+variable "use_docker" {
+    type        = bool
+    default     = false
+}

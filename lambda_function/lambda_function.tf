@@ -23,7 +23,8 @@ resource "aws_lambda_function" "lambda" {
   role                           = aws_iam_role.lambda.arn
   handler                        = var.handler
   runtime                        = var.runtime
-  filename                       = var.create_empty_function ? "${path.module}/placeholder.zip" : var.filename
+  filename                       = var.use_docker ? null : var.create_empty_function ? "${path.module}/placeholder.zip" : var.filename
+  image_uri                      = var.use_docker ? aws_ecr_repository.lambda_ecr_repo[0].repository_url : null
   timeout                        = var.timeout
   memory_size                    = var.memory_size
   reserved_concurrent_executions = var.reserved_concurrent_executions

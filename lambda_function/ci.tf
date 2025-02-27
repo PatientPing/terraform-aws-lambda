@@ -55,6 +55,21 @@ data "aws_iam_policy_document" "policy" {
       actions = ["lambda:InvokeFunction", "lambda:GetFunctionConfiguration"]
     }
   }
+  dynamic "statement" {
+    for_each = var.use_docker ? ["allow_ecr"] : []
+    content {
+      effect = "Allow"
+      resources = ["*"]
+      actions = [
+        "ecr:BatchCheckLayerAvailability",
+        "ecr:CompleteLayerUpload",
+        "ecr:GetAuthorizationToken",
+        "ecr:InitiateLayerUpload",
+        "ecr:PutImage",
+        "ecr:UploadLayerPart"
+      ]
+    }
+  }
 
 }
 
@@ -108,4 +123,9 @@ resource "aws_codebuild_webhook" "lambda" {
       pattern = var.git_branch
     }
   }
+}
+
+resource aws_ecr_repository "lambda_ecr_repo" {
+  count = var.use_docker ? 1 : 0
+  name = var.function_name
 }
