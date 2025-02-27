@@ -142,9 +142,6 @@ resource aws_ecr_repository "lambda_ecr_repo" {
 
 resource "null_resource" "push_docker_image" {
   count = var.use_docker ? 1 : 0
-  triggers = {
-    ecr_repo_uri = aws_ecr_repository.lambda_ecr_repo[0].repository_url
-  }
   provisioner "local-exec" {
     command = <<EOF
     aws ecr get-login-password --region ${data.aws_region.current.name} | docker login --username AWS --password-stdin ${aws_ecr_repository.lambda_ecr_repo[0].repository_url}
