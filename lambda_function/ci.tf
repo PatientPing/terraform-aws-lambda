@@ -122,7 +122,7 @@ resource "aws_codebuild_project" "lambda" {
     type            = "GITHUB"
     location        = var.github_url
     git_clone_depth = 1
-
+    buildspec       = var.use_docker ? file("${path.module}/docker_buildspec.yml") : "buildspec.yml"
   }
 }
 
