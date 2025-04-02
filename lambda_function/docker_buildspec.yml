@@ -10,6 +10,6 @@ phases:
       - ACCT_ID=$(aws sts get-caller-identity --query "Account" --output text)
       - DOCKER_URI="${ACCT_ID}.dkr.ecr.us-east-1.amazonaws.com"
       - aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin ${DOCKER_URI}
-      - docker build -t ${DOCKER_URI}/$lambda_function_name .
+      - docker build -t ${DOCKER_URI}/$lambda_function_name . --build-arg GITHUB_TOKEN=$GITHUB_TOKEN
       - docker push ${DOCKER_URI}/$lambda_function_name
       - aws lambda update-function-code --function-name "$lambda_function_name" --image-uri ${DOCKER_URI}/$lambda_function_name:latest
