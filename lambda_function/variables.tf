@@ -200,3 +200,9 @@ variable "use_docker" {
     type        = bool
     default     = false
 }
+
+variable "github_token_path" {
+  type        = string
+  default     = "/cloudeng/infra/github/token"
+  description = "Path to the GitHub token in parameter store"
+}
