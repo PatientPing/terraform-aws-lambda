@@ -146,7 +146,7 @@ resource "aws_codebuild_webhook" "lambda" {
 resource aws_ecr_repository "lambda_ecr_repo" {
   count = var.use_docker ? 1 : 0
   name  = var.function_name
-
+  force_delete = true
 }
 
 
