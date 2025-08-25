@@ -74,7 +74,8 @@ data "aws_iam_policy_document" "policy" {
         "ecr:GetAuthorizationToken",
         "ecr:InitiateLayerUpload",
         "ecr:PutImage",
-        "ecr:UploadLayerPart"
+        "ecr:UploadLayerPart",
+        "ecr:Get*"
       ]
     }
   }
