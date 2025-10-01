@@ -184,6 +184,12 @@ variable "log_skip_destroy" {
   description = "If true, the log group will not be destroyed when the lambda is destroyed"
 }
 
+variable "subscription_filter_name" {
+  type        = string
+  default     = null
+  description = "Optional override for the CloudWatch Logs subscription filter name"
+}
+
 variable "ship_logs_to_sumo" {
   type        = bool
   default     = false
