@@ -11,7 +11,7 @@ resource "aws_cloudwatch_log_group" "lambda_log_group" {
 }
 
 resource "aws_cloudwatch_log_subscription_filter" "example_subscription_filter" {
-  count           = var.manage_log_group && var.ship_logs_to_sumo ? 1 : 0
+  count           = var.ship_logs_to_sumo ? 1 : 0
   name            = coalesce(var.subscription_filter_name, "${var.function_name}_subscription_filter")
   log_group_name  = var.manage_log_group ? aws_cloudwatch_log_group.lambda_log_group[0].name : local.log_group_name
   destination_arn = "arn:aws:lambda:${data.aws_region.current.name}:${data.aws_caller_identity.current.account_id}:function:SumoCWLogsLambda"
