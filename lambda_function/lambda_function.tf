@@ -9,7 +9,7 @@ resource "aws_cloudwatch_log_group" "lambda_log_group" {
   skip_destroy      = var.log_skip_destroy
 }
 
-resource "aws_cloudwatch_log_subscription_filter" "example_subscription_filter" {
+resource "aws_cloudwatch_log_subscription_filter" "lambda_log_subscription_filter" {
   count           = var.ship_logs_to_sumo ? 1 : 0
   name            = coalesce(var.subscription_filter_name, "${var.function_name}_subscription_filter")
   log_group_name  = aws_cloudwatch_log_group.lambda_log_group.name
