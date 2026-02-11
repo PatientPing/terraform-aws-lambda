@@ -206,3 +206,27 @@ variable "github_token_path" {
   default     = "/cloudeng/infra/github/token"
   description = "Path to the GitHub token in parameter store"
 }
+
+variable "direct_build" {
+  type        = bool
+  default     = false
+  description = "Enable Terraform-native Docker build during apply. When false, existing CodeBuild pattern is used."
+}
+
+variable "git_commit_sha" {
+  type        = string
+  default     = ""
+  description = "The git commit SHA to build. Required when direct_build is true and github_url is set."
+}
+
+variable "docker_build_dir" {
+  type        = string
+  default     = "."
+  description = "Subdirectory within the cloned repo to use as Docker build context."
+}
+
+variable "docker_build_args" {
+  type        = map(string)
+  default     = {}
+  description = "Additional build arguments to pass to docker build."
+}

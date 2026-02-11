@@ -10,7 +10,7 @@ data "aws_region" "current" {}
 data "aws_caller_identity" "current" {}
 
 resource "aws_iam_role" "codebuild" {
-  count = var.github_url == "" ? 0 : 1
+  count = var.github_url != "" && !var.direct_build ? 1 : 0
 
   name = "codebuild_${var.function_name}"
 
@@ -31,7 +31,7 @@ EOF
 }
 
 resource "aws_iam_role_policy" "codebuild" {
-  count = var.github_url == "" ? 0 : 1
+  count = var.github_url != "" && !var.direct_build ? 1 : 0
   role = aws_iam_role.codebuild[0].name
   policy = data.aws_iam_policy_document.policy.json
 }
@@ -95,7 +95,7 @@ data "aws_iam_policy_document" "policy" {
 }
 
 resource "aws_codebuild_project" "lambda" {
-  count = var.github_url == "" ? 0 : 1
+  count = var.github_url != "" && !var.direct_build ? 1 : 0
 
   name          = var.function_name
   build_timeout = var.build_timeout
@@ -129,7 +129,7 @@ resource "aws_codebuild_project" "lambda" {
 }
 
 resource "aws_codebuild_webhook" "lambda" {
-  count = var.github_url == "" ? 0 : 1
+  count = var.github_url != "" && !var.direct_build ? 1 : 0
 
   project_name = aws_codebuild_project.lambda[0].name
 
@@ -154,7 +154,7 @@ resource aws_ecr_repository "lambda_ecr_repo" {
 
 
 resource "null_resource" "push_docker_image" {
-  count = var.use_docker ? 1 : 0
+  count = var.use_docker && !var.direct_build ? 1 : 0
   provisioner "local-exec" {
     command = <<EOF
     aws ecr get-login-password --region ${data.aws_region.current.name} | docker login --username AWS --password-stdin ${aws_ecr_repository.lambda_ecr_repo[0].repository_url}
@@ -165,3 +165,56 @@ EOF
   }
 }
 
+
+resource "null_resource" "docker_build" {
+  count = var.use_docker && var.direct_build && var.github_url != "" ? 1 : 0
+
+  triggers = {
+    commit_sha = var.git_commit_sha
+  }
+
+  provisioner "local-exec" {
+    command = <<-SCRIPT
+      set -e
+
+      # Retrieve GitHub token from SSM
+      GITHUB_TOKEN=$$(aws ssm get-parameter \
+        --name "${var.github_token_path}" \
+        --with-decryption \
+        --query "Parameter.Value" \
+        --output text)
+
+      # Clone and checkout
+      CLONE_DIR=$$(mktemp -d)
+      git clone "https://$${GITHUB_TOKEN}@${replace(var.github_url, "https://", "")}" "$${CLONE_DIR}"
+      cd "$${CLONE_DIR}"
+      git checkout ${var.git_commit_sha}
+
+      # Build
+      BUILD_CONTEXT="$${CLONE_DIR}/${var.docker_build_dir}"
+      EXTRA_ARGS="${join(" ", [for k, v in var.docker_build_args : "--build-arg ${k}=${v}"])}"
+      docker build \
+        -t ${aws_ecr_repository.lambda_ecr_repo[0].repository_url}:${var.git_commit_sha} \
+        --build-arg GITHUB_TOKEN=$${GITHUB_TOKEN} \
+        --build-arg GITHUB_SHA=${var.git_commit_sha} \
+        $${EXTRA_ARGS} \
+        "$${BUILD_CONTEXT}"
+
+      # Tag latest
+      docker tag \
+        ${aws_ecr_repository.lambda_ecr_repo[0].repository_url}:${var.git_commit_sha} \
+        ${aws_ecr_repository.lambda_ecr_repo[0].repository_url}:latest
+
+      # Push
+      aws ecr get-login-password --region ${data.aws_region.current.name} | \
+        docker login --username AWS --password-stdin ${aws_ecr_repository.lambda_ecr_repo[0].repository_url}
+      docker push ${aws_ecr_repository.lambda_ecr_repo[0].repository_url}:${var.git_commit_sha}
+      docker push ${aws_ecr_repository.lambda_ecr_repo[0].repository_url}:latest
+
+      # Cleanup
+      rm -rf "$${CLONE_DIR}"
+    SCRIPT
+  }
+
+  depends_on = [aws_ecr_repository.lambda_ecr_repo]
+}

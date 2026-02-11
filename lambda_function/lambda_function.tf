@@ -24,7 +24,7 @@ resource "aws_lambda_function" "lambda" {
   handler                        = var.use_docker ? null : var.handler
   runtime                        = var.use_docker ? null : var.runtime
   filename                       = var.use_docker ? null : var.create_empty_function ? "${path.module}/placeholder.zip" : var.filename
-  image_uri                      = var.use_docker ? "${aws_ecr_repository.lambda_ecr_repo[0].repository_url}:latest" : null
+  image_uri                      = var.use_docker ? (var.direct_build && var.github_url != "" ? "${aws_ecr_repository.lambda_ecr_repo[0].repository_url}:${var.git_commit_sha}" : "${aws_ecr_repository.lambda_ecr_repo[0].repository_url}:latest") : null
   timeout                        = var.timeout
   memory_size                    = var.memory_size
   reserved_concurrent_executions = var.reserved_concurrent_executions
@@ -41,7 +41,9 @@ resource "aws_lambda_function" "lambda" {
   }
 
   environment {
-    variables = var.environment_variables
+    variables = merge(var.environment_variables, {
+      GH_SHA = data.aws_region.current.name
+    })
   }
 
   tags = var.tags
@@ -52,5 +54,5 @@ resource "aws_lambda_function" "lambda" {
     ]
   }
 
-  depends_on = [null_resource.push_docker_image]
+  depends_on = [null_resource.push_docker_image, null_resource.docker_build]
 }
