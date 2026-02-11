@@ -174,15 +174,12 @@ resource "null_resource" "docker_build" {
   }
 
   provisioner "local-exec" {
+    interpreter = ["/bin/bash", "-c"]
     command = <<-SCRIPT
       set -e
 
       # Retrieve GitHub token from SSM
-      GITHUB_TOKEN=$$(aws ssm get-parameter \
-        --name "${var.github_token_path}" \
-        --with-decryption \
-        --query "Parameter.Value" \
-        --output text)
+      GITHUB_TOKEN=$$(aws ssm get-parameter --name "${var.github_token_path}" --with-decryption --query "Parameter.Value" --output text)
 
       # Clone and checkout
       CLONE_DIR=$$(mktemp -d)
@@ -191,14 +188,12 @@ resource "null_resource" "docker_build" {
       git checkout ${var.git_commit_sha}
 
       # Build
-      BUILD_CONTEXT="$${CLONE_DIR}/${var.docker_build_dir}"
-      EXTRA_ARGS="${join(" ", [for k, v in var.docker_build_args : "--build-arg ${k}=${v}"])}"
       docker build \
         -t ${aws_ecr_repository.lambda_ecr_repo[0].repository_url}:${var.git_commit_sha} \
         --build-arg GITHUB_TOKEN=$${GITHUB_TOKEN} \
         --build-arg GITHUB_SHA=${var.git_commit_sha} \
-        $${EXTRA_ARGS} \
-        "$${BUILD_CONTEXT}"
+        ${join(" ", [for k, v in var.docker_build_args : "--build-arg ${k}=${v}"])} \
+        "$${CLONE_DIR}/${var.docker_build_dir}"
 
       # Tag latest
       docker tag \
