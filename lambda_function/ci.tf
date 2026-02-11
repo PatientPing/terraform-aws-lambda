@@ -174,41 +174,16 @@ resource "null_resource" "docker_build" {
   }
 
   provisioner "local-exec" {
+    command = templatefile("${path.module}/docker_build.sh.tpl", {
+      github_token_path = var.github_token_path
+      git_host          = replace(var.github_url, "https://", "")
+      git_commit_sha    = var.git_commit_sha
+      ecr_repo_url      = aws_ecr_repository.lambda_ecr_repo[0].repository_url
+      docker_build_dir  = var.docker_build_dir
+      extra_build_args  = join(" ", [for k, v in var.docker_build_args : "--build-arg ${k}=${v}"])
+      aws_region        = data.aws_region.current.name
+    })
     interpreter = ["/bin/bash", "-c"]
-    command = <<-SCRIPT
-      set -e
-
-      # Retrieve GitHub token from SSM
-      GITHUB_TOKEN=$$(aws ssm get-parameter --name "${var.github_token_path}" --with-decryption --query "Parameter.Value" --output text)
-
-      # Clone and checkout
-      CLONE_DIR=$$(mktemp -d)
-      git clone "https://$${GITHUB_TOKEN}@${replace(var.github_url, "https://", "")}" "$${CLONE_DIR}"
-      cd "$${CLONE_DIR}"
-      git checkout ${var.git_commit_sha}
-
-      # Build
-      docker build \
-        -t ${aws_ecr_repository.lambda_ecr_repo[0].repository_url}:${var.git_commit_sha} \
-        --build-arg GITHUB_TOKEN=$${GITHUB_TOKEN} \
-        --build-arg GITHUB_SHA=${var.git_commit_sha} \
-        ${join(" ", [for k, v in var.docker_build_args : "--build-arg ${k}=${v}"])} \
-        "$${CLONE_DIR}/${var.docker_build_dir}"
-
-      # Tag latest
-      docker tag \
-        ${aws_ecr_repository.lambda_ecr_repo[0].repository_url}:${var.git_commit_sha} \
-        ${aws_ecr_repository.lambda_ecr_repo[0].repository_url}:latest
-
-      # Push
-      aws ecr get-login-password --region ${data.aws_region.current.name} | \
-        docker login --username AWS --password-stdin ${aws_ecr_repository.lambda_ecr_repo[0].repository_url}
-      docker push ${aws_ecr_repository.lambda_ecr_repo[0].repository_url}:${var.git_commit_sha}
-      docker push ${aws_ecr_repository.lambda_ecr_repo[0].repository_url}:latest
-
-      # Cleanup
-      rm -rf "$${CLONE_DIR}"
-    SCRIPT
   }
 
   depends_on = [aws_ecr_repository.lambda_ecr_repo]
