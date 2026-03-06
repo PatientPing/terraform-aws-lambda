@@ -12,6 +12,7 @@ git checkout "${git_commit_sha}"
 
 # Build
 docker build \
+  --platform linux/amd64 \
   -t "${ecr_repo_url}:${git_commit_sha}" \
   --build-arg "GITHUB_TOKEN=$${GITHUB_TOKEN}" \
   --build-arg "GITHUB_SHA=${git_commit_sha}" \
