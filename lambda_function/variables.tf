@@ -33,6 +33,11 @@ variable "publish" {
   default = false
 }
 
+variable "lambda_alias_name" {
+  type    = string
+  default = "live"
+}
+
 variable "handler" {
   type = string
 }
@@ -108,6 +113,11 @@ variable "create_empty_function" {
 
 variable "reserved_concurrent_executions" {
   default = "-1"
+}
+
+variable "provisioned_concurrent_executions" {
+  type    = number
+  default = 0
 }
 
 variable "github_url" {
