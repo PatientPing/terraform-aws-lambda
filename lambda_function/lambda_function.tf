@@ -22,6 +22,7 @@ locals {
     "614143157168" : local.sumo_url_prod,
     "050919298421" : local.sumo_url_prod,
     "079655036558" : local.sumo_url_nonprod,
+    "688891188534" : local.sumo_url_nonprod,
   }
 }
 
