@@ -9,10 +9,11 @@ CLONE_DIR=$(mktemp -d)
 git clone "https://$${GITHUB_TOKEN}@${git_host}" "$${CLONE_DIR}"
 cd "$${CLONE_DIR}"
 git checkout "${git_commit_sha}"
-
+wget https://github.com/SumoLogic/sumologic-lambda-extensions/releases/latest/download/sumologic-extension-amd64.tar.gz
 # Build
 docker build \
   --platform linux/amd64 \
+  --provenance=false \
   -t "${ecr_repo_url}:${git_commit_sha}" \
   --build-arg "GITHUB_TOKEN=$${GITHUB_TOKEN}" \
   --build-arg "GITHUB_SHA=${git_commit_sha}" \
