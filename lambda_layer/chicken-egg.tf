@@ -9,6 +9,11 @@ data "archive_file" "lambda_placeholder" {
 locals {
   source = {
     "python2.7"  = "${path.module}/placeholders/python2.7"
+    "python3.12"  = "${path.module}/placeholders/python3.12"
+    "python3.11"  = "${path.module}/placeholders/python3.11"
+    "python3.10"  = "${path.module}/placeholders/python3.10"
+    "python3.9"  = "${path.module}/placeholders/python3.9"
+    "python3.8"  = "${path.module}/placeholders/python3.8"
     "python3.7"  = "${path.module}/placeholders/python3.7/"
     "python3.6"  = "${path.module}/placeholders/python3.6/"
     "nodejs6.10" = "${path.module}/placeholders/nodejs6.10/"
