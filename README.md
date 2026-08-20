@@ -19,10 +19,15 @@ CodeBuild job to deploy it.
 
 | argument                  | Description                                                               | Default      |
 | ------------------------- | --------------------------------------------------------------------------| ------------ |
-| github_url                | GitHub URL of function or layer code.  Enables CodeBuild.  Assumes buildspec.yml at root of repo.  Requires github_token_ssm_param | "" |
+| github_url                | GitHub URL of function or layer code.  Enables CodeBuild.  Assumes buildspec.yml at root of repo.  Requires github_token_path | "" |
+| github_token_path         | Path to the GitHub token in AWS SSM Parameter Store (used to clone the repo for Docker builds).                                   | "/cloudeng/infra/github/token" |
 | codebuild_credential_arn  | AWS Codebuild source credential for accessing github                      | ""           |
 | build_timeout             | Codebuild Timeout in minutes.                                             | "60"           |
+| use_docker                | Build the function as a container image rather than a zip package.        | false        |
+| direct_build              | Enable Terraform-native Docker build during `apply` (Mode A): the module clones the repo, checks out `git_commit_sha`, and runs `docker build` locally. When false, the existing CodeBuild pattern is used (Mode B). Both paths honor `docker_build_dir`. | false |
+| git_commit_sha            | The git commit SHA to build. Required when `direct_build = true` and `github_url` is set.                                         | ""           |
 | docker_build_dir          | Path within the cloned repo used as the Docker build context (Dockerfile location), e.g. `lambdas/<group>/<name>` for monorepo-sourced lambdas. Honored by both build paths: the direct build (`direct_build = true`) and the CodeBuild path (`use_docker`, `direct_build = false`). Must be non-empty. | "." (repo root) |
+| docker_build_args         | Additional `--build-arg` values to pass to `docker build`, as a map.      | {}           |
 
 ### lambda_function
 Many of the module arguments map directly to the [aws_lambda_function](https://www.terraform.io/docs/providers/aws/r/lambda_function.html) resource arguments:
@@ -46,6 +51,7 @@ Additional arguments:
 | argument                  | Description                                                               | Default      |
 | ------------------------- | --------------------------------------------------------------------------| ------------ |
 | create_empty_function     | Create an empty lambda function without the actual code if set to true    | True         |
+| ship_logs_to_sumo         | If true, create a subscription filter to send the function's logs to Sumo Logic. | false |
 | policies                  | List of statement policies to add to module-manageg Lambda IAM role role. | []           |
 | permissions               | map of external resources which can invoke the lambda function            | { enabled = false } |
 
