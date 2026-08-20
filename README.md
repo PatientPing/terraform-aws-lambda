@@ -19,9 +19,15 @@ CodeBuild job to deploy it.
 
 | argument                  | Description                                                               | Default      |
 | ------------------------- | --------------------------------------------------------------------------| ------------ |
-| github_url                | GitHub URL of function or layer code.  Enables CodeBuild.  Assumes buildspec.yml at root of repo.  Requires github_token_ssm_param | "" |
+| github_url                | GitHub URL of function or layer code.  Enables CodeBuild.  Assumes buildspec.yml at root of repo.  Requires github_token_path | "" |
+| github_token_path         | Path to the GitHub token in AWS SSM Parameter Store (used to clone the repo for Docker builds).                                   | "/cloudeng/infra/github/token" |
 | codebuild_credential_arn  | AWS Codebuild source credential for accessing github                      | ""           |
 | build_timeout             | Codebuild Timeout in minutes.                                             | "60"           |
+| use_docker                | Build the function as a container image rather than a zip package.        | false        |
+| direct_build              | Enable Terraform-native Docker build during `apply` (Mode A): the module clones the repo, checks out `git_commit_sha`, and runs `docker build` locally. When false, the existing CodeBuild pattern is used (Mode B). Both paths honor `docker_build_dir`. | false |
+| git_commit_sha            | The git commit SHA to build. Required when `direct_build = true` and `github_url` is set.                                         | ""           |
+| docker_build_dir          | Path within the cloned repo used as the Docker build context (Dockerfile location), e.g. `lambdas/<group>/<name>` for monorepo-sourced lambdas. Honored by both build paths: the direct build (`direct_build = true`) and the CodeBuild path (`use_docker`, `direct_build = false`). Must be non-empty. | "." (repo root) |
+| docker_build_args         | Additional `--build-arg` values to pass to `docker build`, as a map.      | {}           |
 
 ### lambda_function
 Many of the module arguments map directly to the [aws_lambda_function](https://www.terraform.io/docs/providers/aws/r/lambda_function.html) resource arguments:
@@ -45,6 +51,12 @@ Additional arguments:
 | argument                  | Description                                                               | Default      |
 | ------------------------- | --------------------------------------------------------------------------| ------------ |
 | create_empty_function     | Create an empty lambda function without the actual code if set to true    | True         |
+| ephemeral_storage         | Size of the function's `/tmp` ephemeral storage in MB (512–10240).        | 512          |
+| log_group_name            | Name of the CloudWatch log group to create for the function. If unset, the default `/aws/lambda/<function name>` is used. | "" |
+| log_retention_in_days     | Retention for the function's log group, in days. `0` means never expire.  | 0            |
+| log_skip_destroy          | Retain the log group when the function is destroyed.                      | true         |
+| log_tags                  | Tags to apply to the function's log group.                                | {}           |
+| ship_logs_to_sumo         | If true, create a subscription filter to send the function's logs to Sumo Logic. | false |
 | policies                  | List of statement policies to add to module-manageg Lambda IAM role role. | []           |
 | permissions               | map of external resources which can invoke the lambda function            | { enabled = false } |
 
@@ -61,7 +73,7 @@ Additional arguments:
 | argument                  | Description                                                               | Default      |
 | ------------------------- | --------------------------------------------------------------------------| ------------ |
 | create_empty_layer        | Create an empty lambda layer without the actual code if set to true       | True         |
-| codebuild_image           | Specify Codebuild's [image](https://docs.aws.amazon.com/codebuild/latest/userguide/build-env-ref-available.html) | "aws/codebuild/standard:1.0" |
+| codebuild_image           | Specify Codebuild's [image](https://docs.aws.amazon.com/codebuild/latest/userguide/build-env-ref-available.html) | "aws/codebuild/standard:7.0" |
 | privileged_mode           | Run the docker container with [privilege](https://docs.docker.com/engine/reference/run/#runtime-privilege-and-linux-capabilities)               | False         |
 | codebuild_can_run_integration_test | Specifies whether or not codebuild job can invoke lambda function and is passed through to the job as an env variable (run_integration_test) | False
 
@@ -146,6 +158,6 @@ If invoking this module within an environment where unit testing makes sense, by
 * This codebuild job gets triggered automatically by certain events in lambda functions and layers github repo, such as a pull request or pull request update
 * The details on this codebuild job can be found in the `unit_test_trigger.tf` file in the lambda_function and lambda_layer directories
 * Following things need to be done for proper setup:
-  * Need to make sure that codebuild_can_run_unit_test is set to true in the lambda_function or lambda_layer module
+  * Need to make sure that create_codebuild_to_run_unit_test is set to true in the lambda_function or lambda_layer module
   * To trigger this codebuild, you need to add buildspec-tests.yml in the branch you are creating the PR from
   * You can make use of git_base_ref_for_unit_test if you have a different base branch for unit tests
