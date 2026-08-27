@@ -9,7 +9,12 @@ CLONE_DIR=$(mktemp -d)
 git clone "https://$${GITHUB_TOKEN}@${git_host}" "$${CLONE_DIR}"
 cd "$${CLONE_DIR}"
 git checkout "${git_commit_sha}"
-wget https://github.com/SumoLogic/sumologic-lambda-extensions/releases/latest/download/sumologic-extension-amd64.tar.gz
+# Fetch the Sumo extension into the Docker build context (the build dir), not the
+# clone root, so a subdirectory build context (docker_build_dir set for monorepo
+# lambdas) still contains the tarball for the Dockerfile's
+# `ADD sumologic-extension-amd64.tar.gz*`. docker_build_dir defaults to "." (repo
+# root) for single-repo lambdas, so their build context is unchanged.
+wget -P "$${CLONE_DIR}/${docker_build_dir}" https://github.com/SumoLogic/sumologic-lambda-extensions/releases/latest/download/sumologic-extension-amd64.tar.gz
 # Build
 docker build \
   --platform linux/amd64 \
