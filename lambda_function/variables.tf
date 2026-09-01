@@ -213,6 +213,12 @@ variable "direct_build" {
   description = "Enable Terraform-native Docker build during apply. When false, existing CodeBuild pattern is used."
 }
 
+variable "create_webhook" {
+  type        = bool
+  default     = true
+  description = "Register a CodeBuild GitHub PUSH webhook for this lambda. Set false for monorepo-sourced builds: every lambda's webhook targets the same repo and GitHub caps webhooks at ~20/repo, so per-lambda webhooks don't scale there (the monorepo deploy is driven by the pipeline / tofu apply instead). See AI-3522."
+}
+
 variable "git_commit_sha" {
   type        = string
   default     = ""
