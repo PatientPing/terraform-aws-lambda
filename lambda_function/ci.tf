@@ -129,7 +129,7 @@ resource "aws_codebuild_project" "lambda" {
 }
 
 resource "aws_codebuild_webhook" "lambda" {
-  count = var.github_url != "" && !var.direct_build ? 1 : 0
+  count = var.github_url != "" && !var.direct_build && var.create_webhook ? 1 : 0
 
   project_name = aws_codebuild_project.lambda[0].name
 
