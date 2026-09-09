@@ -20,15 +20,12 @@ wget -P "$${CLONE_DIR}/${docker_build_dir}" https://github.com/SumoLogic/sumolog
 aws ecr get-login-password --region "${aws_region}" | \
   docker login --username AWS --password-stdin "${ecr_repo_url}"
 
-# Build the shared internal-libs base image locally first, if this source provides
-# one. Monorepo/at_lib lambdas ship `at_lib-base.Dockerfile` at the repo root; it
-# bakes `at_lib/` in as layers. The lambda's own Dockerfile then does
-# `FROM at-lib-base:<sha>` (a LOCAL tag, no registry), so shared libs need no
-# git+https pin and no build-time GITHUB_TOKEN. Non-monorepo lambdas have no such
-# file, so this is skipped and their build is unchanged.
-if [ -f at_lib-base.Dockerfile ]; then
+# Optionally build a caller-specified base image locally first (multi-image builds).
+# When base_image_dockerfile is set, the main Dockerfile can `FROM ${base_image_tag}`
+# (a local tag, no registry). The module is agnostic to what the base contains.
+if [ -n "${base_image_dockerfile}" ]; then
   docker build --platform linux/amd64 --provenance=false \
-    -f at_lib-base.Dockerfile -t "at-lib-base:${git_commit_sha}" .
+    -f "${base_image_dockerfile}" -t "${base_image_tag}" .
 fi
 
 # Build

@@ -31,24 +31,24 @@ EOF
 }
 
 resource "aws_iam_role_policy" "codebuild" {
-  count = var.github_url != "" && !var.direct_build ? 1 : 0
-  role = aws_iam_role.codebuild[0].name
+  count  = var.github_url != "" && !var.direct_build ? 1 : 0
+  role   = aws_iam_role.codebuild[0].name
   policy = data.aws_iam_policy_document.policy.json
 }
 
 data "aws_iam_policy_document" "policy" {
   statement {
-    effect = "Allow"
+    effect    = "Allow"
     resources = ["*"]
     actions = [
       "logs:CreateLogGroup",
       "logs:CreateLogStream",
-      "logs:PutLogEvents"]
+    "logs:PutLogEvents"]
   }
   statement {
     effect = "Allow"
     resources = [
-      aws_lambda_function.lambda.arn]
+    aws_lambda_function.lambda.arn]
     actions = [
       "lambda:UpdateFunctionCode",
       "lambda:ListVersionsByFunction",
@@ -58,15 +58,15 @@ data "aws_iam_policy_document" "policy" {
   dynamic "statement" {
     for_each = var.codebuild_can_run_integration_test ? ["allow_invoke"] : []
     content {
-      effect = "Allow"
+      effect    = "Allow"
       resources = [aws_lambda_function.lambda.arn]
-      actions = ["lambda:InvokeFunction", "lambda:GetFunctionConfiguration"]
+      actions   = ["lambda:InvokeFunction", "lambda:GetFunctionConfiguration"]
     }
   }
   dynamic "statement" {
     for_each = var.use_docker ? ["allow_ecr"] : []
     content {
-      effect = "Allow"
+      effect    = "Allow"
       resources = ["*"]
       actions = [
         "ecr:BatchCheckLayerAvailability",
@@ -88,7 +88,7 @@ data "aws_iam_policy_document" "policy" {
       actions = [
         "ssm:GetParameter*"
       ]
-      resources = ["arn:aws:ssm:${data.aws_region.current.name}:${data.aws_caller_identity.current.account_id}:parameter${substr(var.github_token_path, 0, 1) == "/" ? "": "/" }${var.github_token_path}"]
+      resources = ["arn:aws:ssm:${data.aws_region.current.name}:${data.aws_caller_identity.current.account_id}:parameter${substr(var.github_token_path, 0, 1) == "/" ? "" : "/"}${var.github_token_path}"]
     }
   }
 
@@ -111,7 +111,7 @@ resource "aws_codebuild_project" "lambda" {
     type                        = "LINUX_CONTAINER"
     image_pull_credentials_type = "CODEBUILD"
     environment_variable {
-      name = "run_integration_test"
+      name  = "run_integration_test"
       value = var.codebuild_can_run_integration_test
     }
     environment_variable {
@@ -124,7 +124,7 @@ resource "aws_codebuild_project" "lambda" {
     type            = "GITHUB"
     location        = var.github_url
     git_clone_depth = 1
-    buildspec       = var.use_docker ? templatefile("${path.module}/docker_buildspec.yml", {gh_token = var.github_token_path, docker_build_dir = var.docker_build_dir}) : "buildspec.yml"
+    buildspec       = var.use_docker ? templatefile("${path.module}/docker_buildspec.yml", { gh_token = var.github_token_path, docker_build_dir = var.docker_build_dir, base_image_dockerfile = var.base_image_dockerfile, base_image_tag = var.base_image_tag }) : "buildspec.yml"
   }
 }
 
@@ -146,9 +146,9 @@ resource "aws_codebuild_webhook" "lambda" {
   }
 }
 
-resource aws_ecr_repository "lambda_ecr_repo" {
-  count = var.use_docker ? 1 : 0
-  name  = var.function_name
+resource "aws_ecr_repository" "lambda_ecr_repo" {
+  count        = var.use_docker ? 1 : 0
+  name         = var.function_name
   force_delete = true
 }
 
@@ -175,13 +175,15 @@ resource "null_resource" "docker_build" {
 
   provisioner "local-exec" {
     command = templatefile("${path.module}/docker_build.sh.tpl", {
-      github_token_path = var.github_token_path
-      git_host          = replace(var.github_url, "https://", "")
-      git_commit_sha    = var.git_commit_sha
-      ecr_repo_url      = aws_ecr_repository.lambda_ecr_repo[0].repository_url
-      docker_build_dir  = var.docker_build_dir
-      extra_build_args  = join(" ", [for k, v in var.docker_build_args : "--build-arg ${k}=${v}"])
-      aws_region        = data.aws_region.current.name
+      github_token_path     = var.github_token_path
+      git_host              = replace(var.github_url, "https://", "")
+      git_commit_sha        = var.git_commit_sha
+      ecr_repo_url          = aws_ecr_repository.lambda_ecr_repo[0].repository_url
+      docker_build_dir      = var.docker_build_dir
+      extra_build_args      = join(" ", [for k, v in var.docker_build_args : "--build-arg ${k}=${v}"])
+      aws_region            = data.aws_region.current.name
+      base_image_dockerfile = var.base_image_dockerfile
+      base_image_tag        = var.base_image_tag
     })
     interpreter = ["/bin/bash", "-c"]
   }
