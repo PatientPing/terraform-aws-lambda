@@ -16,11 +16,20 @@ git checkout "${git_commit_sha}"
 # root) for single-repo lambdas, so their build context is unchanged.
 wget -P "$${CLONE_DIR}/${docker_build_dir}" https://github.com/SumoLogic/sumologic-lambda-extensions/releases/latest/download/sumologic-extension-amd64.tar.gz
 
-# Authenticate to ECR BEFORE building so the build can pull a private base image
-# referenced by the Dockerfile's FROM (e.g. a shared libs-base image passed via
-# docker_build_args). Logging in to the registry host also covers the push below.
+# Authenticate to ECR for the image push below.
 aws ecr get-login-password --region "${aws_region}" | \
   docker login --username AWS --password-stdin "${ecr_repo_url}"
+
+# Build the shared internal-libs base image locally first, if this source provides
+# one. Monorepo/at_lib lambdas ship `at_lib-base.Dockerfile` at the repo root; it
+# bakes `at_lib/` in as layers. The lambda's own Dockerfile then does
+# `FROM at-lib-base:<sha>` (a LOCAL tag, no registry), so shared libs need no
+# git+https pin and no build-time GITHUB_TOKEN. Non-monorepo lambdas have no such
+# file, so this is skipped and their build is unchanged.
+if [ -f at_lib-base.Dockerfile ]; then
+  docker build --platform linux/amd64 --provenance=false \
+    -f at_lib-base.Dockerfile -t "at-lib-base:${git_commit_sha}" .
+fi
 
 # Build
 docker build \
