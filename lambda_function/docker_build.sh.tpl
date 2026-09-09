@@ -15,6 +15,13 @@ git checkout "${git_commit_sha}"
 # `ADD sumologic-extension-amd64.tar.gz*`. docker_build_dir defaults to "." (repo
 # root) for single-repo lambdas, so their build context is unchanged.
 wget -P "$${CLONE_DIR}/${docker_build_dir}" https://github.com/SumoLogic/sumologic-lambda-extensions/releases/latest/download/sumologic-extension-amd64.tar.gz
+
+# Authenticate to ECR BEFORE building so the build can pull a private base image
+# referenced by the Dockerfile's FROM (e.g. a shared libs-base image passed via
+# docker_build_args). Logging in to the registry host also covers the push below.
+aws ecr get-login-password --region "${aws_region}" | \
+  docker login --username AWS --password-stdin "${ecr_repo_url}"
+
 # Build
 docker build \
   --platform linux/amd64 \
@@ -30,9 +37,7 @@ docker tag \
   "${ecr_repo_url}:${git_commit_sha}" \
   "${ecr_repo_url}:latest"
 
-# Push
-aws ecr get-login-password --region "${aws_region}" | \
-  docker login --username AWS --password-stdin "${ecr_repo_url}"
+# Push (already authenticated to the registry before the build)
 docker push "${ecr_repo_url}:${git_commit_sha}"
 docker push "${ecr_repo_url}:latest"
 
