@@ -10,6 +10,10 @@ phases:
       - ACCT_ID=$(aws sts get-caller-identity --query "Account" --output text)
       - DOCKER_URI="$${ACCT_ID}.dkr.ecr.us-east-1.amazonaws.com"
       - aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin $${DOCKER_URI}
+      # Optionally build a caller-specified base image locally first (multi-image builds);
+      # the main Dockerfile can then FROM "${base_image_tag}" (a local tag). No-op when
+      # base_image_dockerfile is unset. The module is agnostic to the base's contents.
+      - if [ -n "${base_image_dockerfile}" ]; then docker build --platform=linux/amd64 --provenance=false -f "${base_image_dockerfile}" -t "${base_image_tag}" .; fi
       - docker build --platform=linux/amd64 --provenance=false -t $${DOCKER_URI}/$lambda_function_name "${docker_build_dir}" --build-arg GITHUB_TOKEN=$GITHUB_TOKEN --build-arg GITHUB_SHA=$CODEBUILD_RESOLVED_SOURCE_VERSION
       - docker push $${DOCKER_URI}/$lambda_function_name
       - aws lambda update-function-code --function-name "$lambda_function_name" --image-uri $${DOCKER_URI}/$lambda_function_name:latest

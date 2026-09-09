@@ -197,8 +197,8 @@ variable "log_tags" {
 }
 
 variable "use_docker" {
-    type        = bool
-    default     = false
+  type    = bool
+  default = false
 }
 
 variable "github_token_path" {
@@ -235,4 +235,22 @@ variable "docker_build_args" {
   type        = map(string)
   default     = {}
   description = "Additional build arguments to pass to docker build."
+}
+
+variable "base_image_dockerfile" {
+  type        = string
+  default     = ""
+  description = <<-EOT
+    Optional path (relative to the cloned repo root) to a Dockerfile to build as a
+    LOCAL base image before the main image, enabling multi-image builds where the
+    main Dockerfile does `FROM <base_image_tag>`. Built from the repo root as
+    context. Empty (default) disables it — the main image builds unchanged. The
+    module is agnostic to what the base contains.
+  EOT
+}
+
+variable "base_image_tag" {
+  type        = string
+  default     = "base:latest"
+  description = "Local tag applied to the image built from base_image_dockerfile. The main Dockerfile must reference this exact tag in its FROM. Only used when base_image_dockerfile is set."
 }

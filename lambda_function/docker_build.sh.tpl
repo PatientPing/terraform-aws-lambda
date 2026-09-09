@@ -16,11 +16,17 @@ git checkout "${git_commit_sha}"
 # root) for single-repo lambdas, so their build context is unchanged.
 wget -P "$${CLONE_DIR}/${docker_build_dir}" https://github.com/SumoLogic/sumologic-lambda-extensions/releases/latest/download/sumologic-extension-amd64.tar.gz
 
-# Authenticate to ECR BEFORE building so the build can pull a private base image
-# referenced by the Dockerfile's FROM (e.g. a shared libs-base image passed via
-# docker_build_args). Logging in to the registry host also covers the push below.
+# Authenticate to ECR for the image push below.
 aws ecr get-login-password --region "${aws_region}" | \
   docker login --username AWS --password-stdin "${ecr_repo_url}"
+
+# Optionally build a caller-specified base image locally first (multi-image builds).
+# When base_image_dockerfile is set, the main Dockerfile can `FROM ${base_image_tag}`
+# (a local tag, no registry). The module is agnostic to what the base contains.
+if [ -n "${base_image_dockerfile}" ]; then
+  docker build --platform linux/amd64 --provenance=false \
+    -f "${base_image_dockerfile}" -t "${base_image_tag}" .
+fi
 
 # Build
 docker build \
